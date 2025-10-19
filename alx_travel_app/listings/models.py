@@ -178,3 +178,25 @@ class Review(models.Model):
     def __str__(self):
         # pylint: disable=no-member
         return f"Review by {self.user.first_name} for {self.property_obj.name} - {self.rating} stars"
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    payment_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    transaction_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    reference = models.CharField(max_length=255, unique=True)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    payment_method = models.CharField(max_length=50, default='chapa')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Payment {self.reference} - {self.status}"
+
+    class Meta:
+        ordering = ['-created_at']
